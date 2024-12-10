@@ -97,10 +97,9 @@ router.post("/status", async (req, res) => {
   };
   try {
     const response = await axios.request(options);
-    console.log(response.data);
     if (!response.data.success) {
       // Here we need to redirect the user incase of a failed transaction
-      // return res.redirect()
+      return res.redirect(`${process.env.WEBSITE_URL}#/failed`);
     }
     const bookingDetails = await db.query(
       "UPDATE bookings SET status = TRUE WHERE transaction_id = $1 RETURNING *",
@@ -110,14 +109,17 @@ router.post("/status", async (req, res) => {
       bookingDetails.rows[0];
     for (let i = 0; i < number_of_tickets; i++) {
       const link = nanoid();
+      // QR Generation
       QRCode.toString(link, { type: "terminal" }, function (err, url) {
         console.log(url);
       });
+
       await db.query(
         "INSERT INTO qr_codes (booking_id, transaction_id, ticket_id, qr_code, checked_in) VALUES ($1, $2, $3, $4, FALSE)",
         [id, transaction_id, ticket_id, link]
       );
     }
+    return res.redirect(`${process.env.WEBSITE_URL}#/success/${tId}`);
   } catch (error) {
     console.error(error);
   }

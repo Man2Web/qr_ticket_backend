@@ -9,6 +9,7 @@ const middlewares = require("./middlewares");
 const api = require("./api");
 const payments = require("./api/payments/index");
 const tickets = require("./api/tickets/index");
+const admin = require("./api/admin/index");
 const db = require("./config/database");
 
 const app = express();
@@ -27,6 +28,8 @@ app.get("/", async (req, res) => {
 app.use("/payments", payments);
 
 app.use("/tickets", tickets);
+
+app.use("/admin", admin);
 
 app.use("/api/v1", api);
 
