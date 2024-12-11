@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express();
 const db = require("../../config/database");
+const savePdf = require("../services/savePdf");
 
 router.get("/", async (req, res) => {
   try {
@@ -67,6 +68,34 @@ router.put("/check-in", async (req, res) => {
       [transaction_id, qr_code]
     );
     return res.status(200).json({ message: "Ticket checked-in" });
+  } catch (error) {
+    console.error(error);
+    return res.status(404).json({ message: "Error check-in user" });
+  }
+});
+
+router.get("/download", async (req, res) => {
+  const { id } = req.query;
+  try {
+    const ticketData = await db.query(
+      "SELECT qr_codes.*, bookings.* FROM qr_codes RIGHT JOIN bookings ON qr_codes.booking_id = bookings.id WHERE qr_codes.transaction_id = $1",
+      [id]
+    );
+    if (ticketData.rows.length === 0)
+      return res.status(404).json({ message: "Invalid booking id" });
+
+    const pdfBuffer = await savePdf(ticketData.rows);
+
+    // console.log(ticketData.rows);
+    // Set headers for PDF response
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": 'attachment; filename="booking-confirmation.pdf"',
+      "Content-Length": pdfBuffer.length, // Set the correct content length
+    });
+
+    // Send the PDF buffer as the response
+    res.send(pdfBuffer);
   } catch (error) {
     console.error(error);
     return res.status(404).json({ message: "Error check-in user" });

@@ -33,7 +33,7 @@ router.post("/", async (req, res) => {
     merchantTransactionId: nanoId,
     merchantUserId: nanoId,
     name: fName,
-    amount: 1000 * 100,
+    amount: 1000 * 1,
     redirectUrl: `${process.env.BACKEND_URL}payments/status/?tId=${nanoId}`,
     redirectMode: "POST",
     mobileNumber: phoneNumber,
@@ -50,7 +50,9 @@ router.post("/", async (req, res) => {
   const sha256 = crypto.createHash("sha256").update(stringToHash).digest("hex");
   const checksum = sha256 + "###" + keyIndex;
 
-  const prod_URL = "https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay";
+  // const prod_URL = "https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay";
+
+  const prod_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
 
   const headers = {
     accept: "application/json",
@@ -105,15 +107,14 @@ router.post("/status", async (req, res) => {
       "UPDATE bookings SET status = TRUE WHERE transaction_id = $1 RETURNING *",
       [tId]
     );
+    await db.query(
+      `UPDATE tickets SET tickets_left = tickets_left - $1 WHERE id = $2`,
+      [bookingDetails[0].number_of_tickets, bookingDetails[0].ticket_id]
+    );
     const { id, ticket_id, transaction_id, number_of_tickets } =
       bookingDetails.rows[0];
     for (let i = 0; i < number_of_tickets; i++) {
       const link = nanoid();
-      // QR Generation
-      QRCode.toString(link, { type: "terminal" }, function (err, url) {
-        console.log(url);
-      });
-
       await db.query(
         "INSERT INTO qr_codes (booking_id, transaction_id, ticket_id, qr_code, checked_in) VALUES ($1, $2, $3, $4, FALSE)",
         [id, transaction_id, ticket_id, link]
