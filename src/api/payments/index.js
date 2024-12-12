@@ -4,7 +4,8 @@ const crypto = require("crypto");
 const { nanoid } = require("nanoid");
 const router = express.Router();
 const db = require("../../config/database");
-const QRCode = require("qrcode");
+const sendMessage = require("../services/sendMessage");
+const sendWhatsapp = require("../services/sendWhatsapp");
 
 router.post("/", async (req, res) => {
   const { fName, phoneNumber, ticketId, numberOfTickets } =
@@ -14,12 +15,14 @@ router.post("/", async (req, res) => {
   ]);
   if (!checkTicket.rows[0].status) {
     return res.status(404).json({ message: "Could not process booking" });
-  } else if (numberOfTickets > checkTicket.rows[0].tickets_left) {
-    return res
-      .status(404)
-      .json({ message: "Selected tickets is more than available tickets" });
+  } else if (
+    Number(numberOfTickets) > Number(checkTicket.rows[0].tickets_left)
+  ) {
+    return res.status(404).json({
+      message: `Selected tickets is more than available tickets, Available tickets ${checkTicket.rows[0].tickets_left}`,
+    });
   }
-  const nanoId = nanoid();
+  const nanoId = nanoid(6);
   const demo_merchant_Id = process.env.MERCHANT_ID;
   const demo_salt_key = process.env.SALT_KEY;
 
@@ -50,9 +53,9 @@ router.post("/", async (req, res) => {
   const sha256 = crypto.createHash("sha256").update(stringToHash).digest("hex");
   const checksum = sha256 + "###" + keyIndex;
 
-  // const prod_URL = "https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay";
+  const prod_URL = "https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay";
 
-  const prod_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
+  // const prod_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
 
   const headers = {
     accept: "application/json",
@@ -90,6 +93,7 @@ router.post("/status", async (req, res) => {
   const options = {
     method: "GET",
     url: `https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/status/${merchantId}/${tId}`,
+    // url: `https://api.phonepe.com/apis/hermes/pg/v1/status/${merchantId}/${tId}`,
     headers: {
       accept: "application/json",
       "Content-Type": "application/json",
@@ -107,19 +111,21 @@ router.post("/status", async (req, res) => {
       "UPDATE bookings SET status = TRUE WHERE transaction_id = $1 RETURNING *",
       [tId]
     );
+    const { id, ticket_id, transaction_id, number_of_tickets, phone_number } =
+      bookingDetails.rows[0];
     await db.query(
       `UPDATE tickets SET tickets_left = tickets_left - $1 WHERE id = $2`,
-      [bookingDetails[0].number_of_tickets, bookingDetails[0].ticket_id]
+      [number_of_tickets, ticket_id]
     );
-    const { id, ticket_id, transaction_id, number_of_tickets } =
-      bookingDetails.rows[0];
     for (let i = 0; i < number_of_tickets; i++) {
-      const link = nanoid();
+      const link = nanoid(6);
       await db.query(
         "INSERT INTO qr_codes (booking_id, transaction_id, ticket_id, qr_code, checked_in) VALUES ($1, $2, $3, $4, FALSE)",
         [id, transaction_id, ticket_id, link]
       );
     }
+    await sendMessage(phone_number, transaction_id);
+    await sendWhatsapp(phone_number, transaction_id);
     return res.redirect(`${process.env.WEBSITE_URL}#/success/${tId}`);
   } catch (error) {
     console.error(error);
