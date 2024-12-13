@@ -31,12 +31,16 @@ router.post("/", async (req, res) => {
     [fName, phoneNumber, ticketId, numberOfTickets, nanoId]
   );
 
+  const totalPrice =
+    Number(checkTicket.rows[0].price) * Number(numberOfTickets);
+  const gstAmount = totalPrice * (18 / 100);
+  const finalPrice = totalPrice + gstAmount;
   const data = {
     merchantId: demo_merchant_Id,
     merchantTransactionId: nanoId,
     merchantUserId: nanoId,
     name: fName,
-    amount: 1000 * 1,
+    amount: 100 * finalPrice,
     redirectUrl: `${process.env.BACKEND_URL}payments/status/?tId=${nanoId}`,
     redirectMode: "POST",
     mobileNumber: phoneNumber,
