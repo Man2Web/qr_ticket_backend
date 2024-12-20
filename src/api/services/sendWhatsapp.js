@@ -1,17 +1,11 @@
 const axios = require("axios");
 
-const token = "gG4xW1qJqxtKs3DVID74TPFaQiB66D5CZb7UXC8z24ff6012";
-const credit = 2;
-const sender = "NANGAD";
-const templateId = "1707173396771544479";
-const templateName = "registration";
-
 async function sendWhatsapp(phone_number, transaction_id) {
   try {
     let data = JSON.stringify({
-      token: token,
+      token: "gG4xW1qJqxtKs3DVID74TPFaQiB66D5CZb7UXC8z24ff6012",
       phone: `91${phone_number}`,
-      template_name: templateName,
+      template_name: "registration_link",
       template_language: "en",
       components: [
         {
@@ -19,7 +13,11 @@ async function sendWhatsapp(phone_number, transaction_id) {
           parameters: [
             {
               type: "text",
-              text: transaction_id,
+              text: `${transaction_id}`,
+            },
+            {
+              type: "text",
+              text: `https://api.ticket.nammaooruangadi.com/tickets/view/pdf?id=${transaction_id}`,
             },
           ],
         },
@@ -33,7 +31,7 @@ async function sendWhatsapp(phone_number, transaction_id) {
       headers: {
         "Content-Type": "application/json",
         Cookie:
-          "XSRF-TOKEN=eyJpdiI6IlIva05CelppS1hXWDdGSTRYNXl6YVE9PSIsInZhbHVlIjoiV0oxRjUwVWtsUzBmMzkva2ZidG9rWW5acXREa2E2NjZkeS9kUE13cTdxNXp6RlVCeERCQ0JVL0EzVkdoclV5QXdsbmZzVXArell4MFk0VXBOMzF2ZUhNeDlmZjJ6UTN0TzhvVkhPcm9tWXhvTHdNcENmc1dIZUo3TkpBSTZLSXIiLCJtYWMiOiJhZTdkOGE2YWY5MWJhY2E5MDFjZDEyMGU4NjJjNmQxMzE2MjljNTIwYWY1NmEyOTc1YjBlM2NjNjUwOThmMmVjIiwidGFnIjoiIn0%3D; tryowbot_session=eyJpdiI6Imc5c3NkdkdOK2N2ZFN1Wk9kVHQxVGc9PSIsInZhbHVlIjoiWlpaVi9YSlJGTVJnWlVlNVMzQWNBZDdSclhoVzYyOUJ1WE8zUUJXR1ZUM1FGTE15NmM2UmJibTR2cmJTdDBDR3NNMmVOZWRDQUF3bEFPYXNFM0kzQzczRVhReEVEb2xFWmwweWlkaVlZQkl0ejE4SVhqRUNMSzdRWktFMlRaNFIiLCJtYWMiOiJhNGIzMjQ1MGU5N2I4M2MxNDgxM2E3YTdhMTc0NDRmYTc2MjQ4NDY0NTNmMjE1MmQ1MzZkOWE2MWViYzgyNzhiIiwidGFnIjoiIn0%3D",
+          "XSRF-TOKEN=eyJpdiI6IlpnYVdZbGY4aTN2K0JYYng4bnl3b3c9PSIsInZhbHVlIjoiaFN3TnRjVW5reUw2YjZubnBkdmRoWGtYWXQ0dWpsNXVyK3ZqVnVhNklEckhKVlMxTlg0ZVdWM3dSbDdMcHVRU3pac2l6UFpmWWdkd3JWM3BwYTU4UTBpL0FKQ0xkeEpyQWxYSERNbnpqL3c3WUsybkxNbjJ4bkdXMWRVcXlHM3AiLCJtYWMiOiJmZTRkMTljYTczM2NlMDBmNDg3Mjg3ZTNjMDZlMzNkNGViNDgzYzQyNzJmOGMyNGY3NGMwZTFjYzgzZGRlM2NiIiwidGFnIjoiIn0%3D; tryowbot_session=eyJpdiI6ImorVEl0ei9Mb0Q3ZUJqRVhCVHMyMFE9PSIsInZhbHVlIjoiNytXd3NyNnRCZVpIdE52MHdFb2FBSTJBTk1ycS93UGpXZ08yOFZaeDJ6dWdGdXZ3Sm5IdW1rRmRTbnplQmtKUEFxMk5kWkZTQXZUR3VuOXdTcm8xV1ZOYUJ4MXRPeW8zS3dYVDdaZFovclM3MXF4aEFidFR6bEVLRFNqRjVhWHkiLCJtYWMiOiI4MjM5YjMxMzg4MWViZGU5MTg2MTlhNzA5ZTUzYzc5ODY1MTYwMjNiNTc5OWYxMDE4ZDk5ODdkZWJiY2NkOWZhIiwidGFnIjoiIn0%3D",
       },
       data: data,
     };

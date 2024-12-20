@@ -518,7 +518,7 @@
                                               font-size: 14px;
                                             "
                                             ><img
-                                              src="https://res.cloudinary.com/dkletqozr/image/upload/fl_preserve_transparency/v1733996953/angadi_png_qe425f.jpg?_s=public-apps"
+                                              src="https://res.cloudinary.com/dkletqozr/image/upload/fl_preserve_transparency/v1734185475/angadi_png_xujwnf.jpg?_s=public-apps"
                                               alt="Logo"
                                               width="125"
                                               title="Logo"
@@ -576,12 +576,32 @@
                                       <tr>
                                         <td
                                           align="center"
-                                          style="
-                                            padding: 0;
-                                            margin: 0;
-                                            display: none;
-                                          "
-                                        ></td>
+                                          style="padding: 0; margin: 0"
+                                        >
+                                          <a
+                                            target="_blank"
+                                            href="https://viewstripo.email"
+                                            style="
+                                              mso-line-height-rule: exactly;
+                                              text-decoration: underline;
+                                              color: #926b4a;
+                                              font-size: 14px;
+                                            "
+                                            ><img
+                                              src="https://res.cloudinary.com/dkletqozr/image/upload/fl_preserve_transparency/v1734198587/LOGO_PNG_SS_Medium.jpeg_zqibga.jpg?_s=public-apps"
+                                              alt="Logo"
+                                              width="175"
+                                              title="Logo"
+                                              style="
+                                                display: block;
+                                                font-size: 14px;
+                                                border: 0;
+                                                outline: none;
+                                                text-decoration: none;
+                                              "
+                                              height="125"
+                                          /></a>
+                                        </td>
                                       </tr>
                                     </table>
                                   </td>
@@ -692,6 +712,7 @@
                 </td>
               </tr>
             </table>
+
             <table
               cellpadding="0"
               cellspacing="0"
@@ -876,7 +897,7 @@
                                       ORDER #<%=
                                       userBookingData[0].transaction_id %>
                                     </h2>
-                                    <p
+                                    <!-- <p
                                       style="
                                         margin: 0;
                                         mso-line-height-rule: exactly;
@@ -889,7 +910,7 @@
                                       "
                                     >
                                       24/05/2021
-                                    </p>
+                                    </p> -->
                                   </td>
                                 </tr>
                                 <tr>
@@ -1461,7 +1482,9 @@
                                               font-size: 14px;
                                             "
                                           >
-                                            Subtotal<br />GST<br /><b
+                                            Subtotal<br />
+                                            GST<br />
+                                            <b
                                               >Total (<%=
                                               userBookingData[0].number_of_tickets
                                               %>&nbsp;tickets)</b
@@ -1529,19 +1552,11 @@
                                               font-size: 14px;
                                             "
                                           >
-                                            ₹<%=
-                                            userBookingData[0].number_of_tickets
-                                            * userTicketData.price %><br />₹<%=
-                                            0.18 *
-                                            (userBookingData[0].number_of_tickets
-                                            * userTicketData.price) %><br /><strong
-                                              >₹<%=
-                                              userBookingData[0].number_of_tickets
-                                              * userTicketData.price + (0.18 *
-                                              (userBookingData[0].number_of_tickets
-                                              * userTicketData.price))
-                                              %></strong
-                                            >
+                                            ₹<%= pricePerTicket * totalTickets
+                                            %><br />
+                                            ₹<%= gstPerTicket * totalTickets
+                                            %><br />
+                                            <strong>₹<%= finalPrice %></strong>
                                           </p>
                                         </td>
                                       </tr>

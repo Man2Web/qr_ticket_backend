@@ -25,10 +25,13 @@
     "express": "^4.21.1",
     "helmet": "^8.0.0",
     "html-pdf-node": "^1.0.8",
+    "jspdf": "^2.5.2",
     "morgan": "^1.10.0",
     "nanoid": "3",
     "pg": "^8.13.1",
-    "qrcode": "^1.5.4"
+    "puppeteer": "^23.10.4",
+    "qrcode": "^1.5.4",
+    "sharp": "^0.33.5"
   },
   "devDependencies": {
     "eslint": "^8.57.0",

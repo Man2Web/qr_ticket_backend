@@ -1,16 +1,11 @@
 const axios = require("axios");
 
-const token = "9131fe66b78233e822d92601746431c1";
-const credit = 2;
-const sender = "NANGAD";
-const templateId = "1707173396771544479";
-
 async function sendMessage(phone_number, transaction_id) {
   try {
     let config = {
       method: "post",
       maxBodyLength: Infinity,
-      url: `http://pay4sms.in/sendsms/?token=${token}&credit=${credit}&sender=${sender}&message=NAMMA OORU ANGADI\nRegistration No: ${transaction_id} \nPlease show this SMS for a seamless check-in experience. Thank you,\nTeam ANGADI&number=${phone_number}&templateid=${templateId}`,
+      url: `http://pay4sms.in/sendsms/?token=9131fe66b78233e822d92601746431c1&credit=2&sender=NANGAD&message=NAMMA OORU ANGADI Registration No:${transaction_id} You can access your tickets from the PDF or you can view the tickets from the below mentioned link: https://api.ticket.nammaooruangadi.com/tickets/view/pdf?id=${transaction_id} Thank You, Team ANGADI.&number=${phone_number}&templateid=1707173457573356003`,
       headers: {},
     };
 

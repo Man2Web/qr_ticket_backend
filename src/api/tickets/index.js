@@ -165,6 +165,7 @@ router.put("/edit-ticket", async (req, res) => {
 });
 
 router.post("/booking", async (req, res) => {
+  console.log(req.body);
   const { ticketId, number_of_tickets, name, phone_number } = req.body;
   try {
     const checkTicket = await db.query("SELECT * FROM tickets WHERE id = $1", [
@@ -200,6 +201,34 @@ router.post("/booking", async (req, res) => {
   }
 });
 
+router.post("/booking/offline", async (req, res) => {
+  const { ticketId, number_of_tickets, name, phone_number, mode } = req.body;
+  try {
+    const checkTicket = await db.query("SELECT * FROM tickets WHERE id = $1", [
+      ticketId,
+    ]);
+    if (!checkTicket.rows[0].status) {
+      return res.status(404).json({ message: "Ticket status inactive" });
+    } else if (
+      Number(number_of_tickets) > Number(checkTicket.rows[0].tickets_left)
+    ) {
+      return res.status(404).json({
+        message: `Selected tickets is more than available tickets, Available tickets ${checkTicket.rows[0].tickets_left}`,
+      });
+    }
+    const nanoId = nanoid(6);
+    const payment_mode = mode === "0" ? false : true;
+    await db.query(
+      "INSERT INTO bookings (fName, phone_number, ticket_id, number_of_tickets, transaction_id, status, mode, payment_mode) VALUES ($1, $2, $3, $4, $5, TRUE, FALSE, $6) RETURNING id",
+      [name, phone_number, ticketId, number_of_tickets, nanoId, payment_mode]
+    );
+    return res.status(200).json({ message: "Booking successful" });
+  } catch (error) {
+    console.error(error);
+    return res.status(404).json({ message: "Could not process booking" });
+  }
+});
+
 router.delete("/delete", async (req, res) => {
   const { id } = req.query;
   try {
@@ -208,6 +237,50 @@ router.delete("/delete", async (req, res) => {
   } catch (error) {
     console.error(error);
     return res.status(404).json({ message: "Could not delete ticket" });
+  }
+});
+
+router.get("/data", async (req, res) => {
+  try {
+    const numberOfTicketsSold = await db.query(
+      "SELECT SUM(number_of_tickets) FROM bookings WHERE status = TRUE AND mode = TRUE"
+    );
+    const numberOfTicketsSoldOffline = await db.query(
+      "SELECT SUM(number_of_tickets) FROM bookings WHERE status = TRUE AND mode = FALSE AND payment_mode = FALSE"
+    );
+    const numberOfTicketsSoldOnline = await db.query(
+      "SELECT SUM(number_of_tickets) FROM bookings WHERE status = TRUE AND mode = FALSE AND payment_mode = TRUE"
+    );
+    return res.status(200).json({
+      online: numberOfTicketsSold.rows[0].sum,
+      offline: {
+        online: numberOfTicketsSoldOnline.rows[0].sum,
+        offline: numberOfTicketsSoldOffline.rows[0].sum,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(404).json({ message: "Error getting ticket data" });
+  }
+});
+
+router.get("/data/bookings", async (req, res) => {
+  const { id } = req.query;
+  try {
+    if (id) {
+      const ticketData = await db.query(
+        "SELECT * FROM bookings WHERE transaction_id LIKE $1",
+        [`%${id}%`]
+      );
+      return res.status(200).json({ ticketData: ticketData.rows });
+    }
+    const ticketData = await db.query(
+      "SELECT * FROM bookings ORDER BY id DESC LIMIT 50"
+    );
+    return res.status(200).json({ ticketData: ticketData.rows });
+  } catch (error) {
+    console.error(error);
+    return res.status(404).json({ message: "Error getting bookings data" });
   }
 });
 

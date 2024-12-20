@@ -31,16 +31,30 @@ router.post("/", async (req, res) => {
     [fName, phoneNumber, ticketId, numberOfTickets, nanoId]
   );
 
-  const totalPrice =
-    Number(checkTicket.rows[0].price) * Number(numberOfTickets);
-  const gstAmount = totalPrice * (18 / 100);
-  const finalPrice = totalPrice + gstAmount;
+  const ticketData = checkTicket.rows[0];
+  const gstPercentage = 18;
+
+  // Calculate price per ticket including GST
+  const pricePerTicket = Number(ticketData?.price);
+  const gstPerTicket = parseFloat(
+    (pricePerTicket * (gstPercentage / 100)).toFixed(2)
+  );
+  const priceWithGstPerTicket = parseFloat(
+    (pricePerTicket + gstPerTicket).toFixed(2)
+  );
+
+  // Multiply by the number of tickets
+  const totalTickets = Number(numberOfTickets);
+  const finalPrice = parseFloat(
+    (priceWithGstPerTicket * totalTickets).toFixed(2)
+  );
+
   const data = {
     merchantId: demo_merchant_Id,
     merchantTransactionId: nanoId,
     merchantUserId: nanoId,
     name: fName,
-    amount: 100 * finalPrice,
+    amount: 100 * Number(finalPrice),
     redirectUrl: `${process.env.BACKEND_URL}payments/status/?tId=${nanoId}`,
     redirectMode: "POST",
     mobileNumber: phoneNumber,
@@ -107,9 +121,9 @@ router.post("/status", async (req, res) => {
   };
   try {
     const response = await axios.request(options);
-    if (!response.data.success) {
+    if (!response.data.success || response.data.data.state !== "COMPLETED") {
       // Here we need to redirect the user incase of a failed transaction
-      return res.redirect(`${process.env.WEBSITE_URL}#/failed`);
+      return res.redirect(`${process.env.WEBSITE_URL}failure`);
     }
     const bookingDetails = await db.query(
       "UPDATE bookings SET status = TRUE WHERE transaction_id = $1 RETURNING *",
@@ -130,7 +144,7 @@ router.post("/status", async (req, res) => {
     }
     await sendMessage(phone_number, transaction_id);
     await sendWhatsapp(phone_number, transaction_id);
-    return res.redirect(`${process.env.WEBSITE_URL}#/success/${tId}`);
+    return res.redirect(`${process.env.WEBSITE_URL}success/${tId}`);
   } catch (error) {
     console.error(error);
   }
